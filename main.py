@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from libs import client, daemon
 
 #waiter
 #chef
@@ -155,7 +156,7 @@ class Problem2(tk.Frame):
 
 
 # third window frame page2
-class Problem1(tk.Frame): 
+class Problem1(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -174,10 +175,65 @@ class Problem1(tk.Frame):
         button2.grid(row = 2, column = 1, padx = 10, pady = 10)
     
     def start(self):
+        #label = ttk.Label(self, text ="Page elif")
+        #label.grid(row = 2, column = 5, padx = 10, pady = 10)
+        desk=[]
+        waiter=[]
+        checkout=[]
+        chef=[]
         print(self.controller.deskCount)
         print(self.controller.waiterCount)
         print(self.controller.checkoutCount)
         print(self.controller.chefCount)
+
+        for deskIndex in range(int(self.controller.deskCount)):
+            label = ttk.Label(self,text="masa")
+            label.grid(row = deskIndex+2, column = 4, padx = 10, pady = 10)
+            desk.append(label)
+            label = ttk.Label(self,text=" ")
+            label.grid(row = deskIndex+2, column = 5, padx = 100, pady = 10)
+                        
+        for waiterIndex in range(int(self.controller.waiterCount)):
+            label = ttk.Label(self,text="garson")
+            label.grid(row = waiterIndex+2, column = 6, padx = 10, pady = 10)
+            label2 = ttk.Label(self,text="........")
+            label2.grid(row = waiterIndex+2, column = 7, padx = 10, pady = 10)
+            button= ttk.Button(self,text="+")
+            button.grid(row = waiterIndex+2, column = 8, padx = 10, pady = 10)
+                #command = lambda : controller.show_frame(StartPage))
+            label = ttk.Label(self,text=" ")
+            label.grid(row = waiterIndex+2, column = 9, padx = 100, pady = 10)
+
+            waiter.append([label,label2,button])
+
+        for checkoutIndex in range(int(self.controller.checkoutCount)):
+            label = ttk.Label(self,text="kasa")
+            label.grid(row = checkoutIndex+2, column = 10, padx = 10, pady = 10)
+            label2 = ttk.Label(self,text="........")
+            label2.grid(row = checkoutIndex+2, column =11 , padx = 10, pady = 10)
+            button= ttk.Button(self,text="+")
+            button.grid(row = checkoutIndex+2, column = 12, padx = 10, pady = 10)
+            checkout.append([label,label2,button])
+
+            label = ttk.Label(self,text=" ")
+            label.grid(row = checkoutIndex+2, column = 13, padx = 100, pady = 10)
+
+        for chefIndex in range(int(self.controller.chefCount)):
+            label = ttk.Label(self,text="aşçı")
+            label.grid(row = chefIndex+2, column = 14, padx = 10, pady = 10)
+            label2 = ttk.Label(self,text="........")
+            label2.grid(row = chefIndex+2, column = 15, padx = 10, pady = 10)
+            button= ttk.Button(self,text="+")
+            button.grid(row = chefIndex+2, column = 16, padx = 10, pady = 10)
+
+            chef.append([label,label2,button])
+
+            label = ttk.Label(self,text=" ")
+            label.grid(row = chefIndex+2, column = 17, padx = 100, pady = 10)
+
+        #daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
+
+
   
 # Driver Code
 app = tkinterApp()
