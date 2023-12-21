@@ -1,0 +1,20 @@
+Daemon Started 
+Waiter Started and waiting for call 
+2 waiter thread created 
+ 
+Waiter Started and waiting for call 
+Checkout Started 
+1 checout thread created 
+ 
+Chef Started 
+Chef Started 
+Chef Started 
+Chef Started 
+4 chef thread created 
+ 
+Waiter calling 
+Waiter calling 
+order tooked : sipariþ koyuldu -13552- 
+Waiter called 
+order tooked : sipariþ koyuldu -13644- 
+Waiter called 

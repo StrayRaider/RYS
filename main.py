@@ -231,7 +231,7 @@ class Problem1(tk.Frame):
             label = ttk.Label(self,text=" ")
             label.grid(row = chefIndex+2, column = 17, padx = 100, pady = 10)
 
-        #daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
+        daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
 
 
   
