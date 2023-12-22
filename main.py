@@ -79,12 +79,9 @@ class StartPage(tk.Frame):
         button2.grid(row = 2, column = 1, padx = 10, pady = 10)
 
   
-          
-  
-  
 # second window frame page1 
 class P1Entery(tk.Frame):
-     
+
     def __init__(self, parent, controller):
          
         tk.Frame.__init__(self, parent)
@@ -193,7 +190,7 @@ class Problem1(tk.Frame):
             label.grid(row = deskIndex+2, column = 4, padx = 10, pady = 10)
             self.desk.append(label)
             spacelabel = ttk.Label(self,text=" ")
-            spacelabel.grid(row = deskIndex+2, column = 5, padx = 100, pady = 10)
+            spacelabel.grid(row = deskIndex+2, column = 5, padx = 10, pady = 10)
                         
         for waiterIndex in range(int(self.controller.waiterCount)):
             label = ttk.Label(self,text="garson")
@@ -204,7 +201,7 @@ class Problem1(tk.Frame):
             button.grid(row = waiterIndex+2, column = 8, padx = 10, pady = 10)
                 #command = lambda : controller.show_frame(StartPage))
             spacelabel = ttk.Label(self,text=" ")
-            spacelabel.grid(row = waiterIndex+2, column = 9, padx = 100, pady = 10)
+            spacelabel.grid(row = waiterIndex+2, column = 9, padx = 10, pady = 10)
 
             self.waiter.append([label,label2,button])
 
@@ -218,7 +215,7 @@ class Problem1(tk.Frame):
             self.checkout.append([label,label2,button])
 
             spacelabel = ttk.Label(self,text=" ")
-            spacelabel.grid(row = checkoutIndex+2, column = 13, padx = 100, pady = 10)
+            spacelabel.grid(row = checkoutIndex+2, column = 13, padx = 10, pady = 10)
 
         for chefIndex in range(int(self.controller.chefCount)):
             label = ttk.Label(self,text="aşçı")
@@ -231,7 +228,20 @@ class Problem1(tk.Frame):
             self.chef.append([label,label2,button])
 
             spacelabel = ttk.Label(self,text=" ")
-            spacelabel.grid(row = chefIndex+2, column = 17, padx = 100, pady = 10)
+            spacelabel.grid(row = chefIndex+2, column = 17, padx = 10, pady = 10)
+
+        labelClient = ttk.Label(self,text="musteri sayisini giriniz")
+        labelClient.grid(row = 10, column = 3, padx = 10, pady = 10)
+        clientEntery =ttk.Entry(self, width=15)
+        clientEntery.grid(row = 10, column = 4, padx = 10, pady = 10)
+        labelPrimClient = ttk.Label(self,text="öncelikli musteri sayisini giriniz")
+        labelPrimClient.grid(row = 10, column = 5, padx = 10, pady = 10)
+        primClientEntery =ttk.Entry(self, width=15)
+        primClientEntery.grid(row = 10, column = 6, padx = 10, pady = 10)
+        clientButton= ttk.Button(self,text="müşteri giris")
+        clientButton.grid(row = 10, column = 7, padx = 10, pady = 10,
+                        command = lambda : daemon.createcustomer(clientEntery.get(),primClientEntery.get()))
+
         daemonThread = threading.Thread(target=daemon.start, args=(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount,))
         daemonThread.start()
         #daemonThread.join()
@@ -246,7 +256,6 @@ class Problem1(tk.Frame):
 
         index = 0
         for i in self.waiter:
-            print("here : ", daemon.waiterThreads[index].activeCustomer)
             try:
                 i[0].config(text= "garson ID : {}".format(daemon.waiterThreads[index].ident))
             except:
@@ -272,7 +281,6 @@ class Problem1(tk.Frame):
                 print("waiter index error")
             index += 1
         app.after(500, self.updateStates)
-
 
   
 # Driver Code
