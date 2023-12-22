@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from libs import client, daemon
+import time
+import threading
 
 #waiter
 #chef
@@ -177,10 +179,10 @@ class Problem1(tk.Frame):
     def start(self):
         #label = ttk.Label(self, text ="Page elif")
         #label.grid(row = 2, column = 5, padx = 10, pady = 10)
-        desk=[]
-        waiter=[]
-        checkout=[]
-        chef=[]
+        self.desk=[]
+        self.waiter=[]
+        self.checkout=[]
+        self.chef=[]
         print(self.controller.deskCount)
         print(self.controller.waiterCount)
         print(self.controller.checkoutCount)
@@ -189,9 +191,9 @@ class Problem1(tk.Frame):
         for deskIndex in range(int(self.controller.deskCount)):
             label = ttk.Label(self,text="masa")
             label.grid(row = deskIndex+2, column = 4, padx = 10, pady = 10)
-            desk.append(label)
-            label = ttk.Label(self,text=" ")
-            label.grid(row = deskIndex+2, column = 5, padx = 100, pady = 10)
+            self.desk.append(label)
+            spacelabel = ttk.Label(self,text=" ")
+            spacelabel.grid(row = deskIndex+2, column = 5, padx = 100, pady = 10)
                         
         for waiterIndex in range(int(self.controller.waiterCount)):
             label = ttk.Label(self,text="garson")
@@ -201,10 +203,10 @@ class Problem1(tk.Frame):
             button= ttk.Button(self,text="+")
             button.grid(row = waiterIndex+2, column = 8, padx = 10, pady = 10)
                 #command = lambda : controller.show_frame(StartPage))
-            label = ttk.Label(self,text=" ")
-            label.grid(row = waiterIndex+2, column = 9, padx = 100, pady = 10)
+            spacelabel = ttk.Label(self,text=" ")
+            spacelabel.grid(row = waiterIndex+2, column = 9, padx = 100, pady = 10)
 
-            waiter.append([label,label2,button])
+            self.waiter.append([label,label2,button])
 
         for checkoutIndex in range(int(self.controller.checkoutCount)):
             label = ttk.Label(self,text="kasa")
@@ -213,10 +215,10 @@ class Problem1(tk.Frame):
             label2.grid(row = checkoutIndex+2, column =11 , padx = 10, pady = 10)
             button= ttk.Button(self,text="+")
             button.grid(row = checkoutIndex+2, column = 12, padx = 10, pady = 10)
-            checkout.append([label,label2,button])
+            self.checkout.append([label,label2,button])
 
-            label = ttk.Label(self,text=" ")
-            label.grid(row = checkoutIndex+2, column = 13, padx = 100, pady = 10)
+            spacelabel = ttk.Label(self,text=" ")
+            spacelabel.grid(row = checkoutIndex+2, column = 13, padx = 100, pady = 10)
 
         for chefIndex in range(int(self.controller.chefCount)):
             label = ttk.Label(self,text="aşçı")
@@ -226,12 +228,50 @@ class Problem1(tk.Frame):
             button= ttk.Button(self,text="+")
             button.grid(row = chefIndex+2, column = 16, padx = 10, pady = 10)
 
-            chef.append([label,label2,button])
+            self.chef.append([label,label2,button])
 
-            label = ttk.Label(self,text=" ")
-            label.grid(row = chefIndex+2, column = 17, padx = 100, pady = 10)
+            spacelabel = ttk.Label(self,text=" ")
+            spacelabel.grid(row = chefIndex+2, column = 17, padx = 100, pady = 10)
+        daemonThread = threading.Thread(target=daemon.start, args=(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount,))
+        daemonThread.start()
+        #daemonThread.join()
+        #daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
+        self.updateStates()
 
-        daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
+    def updateStates(self):
+        # get waiter id's
+        style = ttk.Style()
+        style.configure("waiterfree.TLabel", background="red", foreground='blue')
+        style.configure("waiterbusy.TLabel", background="green", foreground='blue')
+
+        index = 0
+        for i in self.waiter:
+            print("here : ", daemon.waiterThreads[index].activeCustomer)
+            try:
+                i[0].config(text= "garson ID : {}".format(daemon.waiterThreads[index].ident))
+            except:
+                print("waiter index error")
+            index += 1
+            i[0].config(style="waiterfree.TLabel")
+
+        # get chef id's
+        index = 0
+        for i in self.chef:
+            try:
+                i[0].config(text= "aşçı ID : {}".format(daemon.chefThreads[index].ident))
+            except:
+                print("waiter index error")
+            index += 1
+
+        # get checkout id's
+        index = 0
+        for i in self.checkout:
+            try:
+                i[0].config(text= "kasa ID : {}".format(daemon.checoutThreads[index].ident))
+            except:
+                print("waiter index error")
+            index += 1
+        app.after(500, self.updateStates)
 
 
   
