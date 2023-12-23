@@ -238,11 +238,10 @@ class Problem1(tk.Frame):
         labelPrimClient.grid(row = 10, column = 5, padx = 10, pady = 10)
         primClientEntery =ttk.Entry(self, width=15)
         primClientEntery.grid(row = 10, column = 6, padx = 10, pady = 10)
-        clientButton= ttk.Button(self,text="müşteri giris")
-        clientButton.grid(row = 10, column = 7, padx = 10, pady = 10,
-                        command = lambda : daemon.createcustomer(clientEntery.get(),primClientEntery.get()))
+        clientButton= ttk.Button(self,text="müşteri giris",command = lambda : daemon.createcustomer(int(clientEntery.get()),int(primClientEntery.get())))
+        clientButton.grid(row = 10, column = 7, padx = 10, pady = 10)
 
-        daemonThread = threading.Thread(target=daemon.start, args=(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount,))
+        daemonThread = threading.Thread(target=daemon.start, args=(int(self.controller.deskCount), int(self.controller.waiterCount), int(self.controller.checkoutCount), int(self.controller.chefCount),))
         daemonThread.start()
         #daemonThread.join()
         #daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)

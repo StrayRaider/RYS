@@ -3,6 +3,31 @@ import time
 import random
 import queue
 
+class ModifiedSemaphore:
+    def __init__(self, initial):
+        self.signal_count = initial
+        self.condition = threading.Condition() 
+
+    def wait(self):
+        with self.condition: 
+            while self.signal_count <= 0:
+                self.condition.wait() 
+            self.signal_count -= 1 
+
+    def signal(self):
+        with self.condition:
+            self.signal_count += 1 
+            self.condition.notify()
+    
+    def signaln(self,n):
+        with self.condition:
+            self.signal_count+=n
+            for _ in range(n):
+                self.condition.notify()
+            
+    def value(self):
+        return self.signal_count 
+
 # Dosyaya yazma işlemleri atomik olmazsa açma okuma ve yazma işlemleri çakışacaktır
 # O yüzden dosyayı açıp ekleme yapma işlemleri atomik olmalı ve bir thread yazma işini bitirip kapatmadan diğeri açmamalı
 with open('log.txt', 'w') as f:
@@ -20,7 +45,6 @@ def writeToLog(textToWrite):
         f.close()
     writeLogMutex.release()
 
-callwaiterEvent = threading.Event()
 sMutex =  threading.Semaphore()
 
 
@@ -31,6 +55,9 @@ checoutThreads = []
 chefThreads = []
 clientThreads=[]
 
+waiterQueue = ModifiedSemaphore(0)
+orderQueue = ModifiedSemaphore(0)
+
 clientCount=10
 primaryClientCount=2
 deskCount=6
@@ -38,9 +65,7 @@ deskCount=6
 """bariyer 6 kişi gelene kadar bekler"""
 clientsId = [[0 for x in range(2)] for y in range(clientCount)]
 
-barrier = threading.Semaphore(value=deskCount)
-barrier2=threading.Semaphore(value=deskCount-primaryClientCount)
-
+barrier = None
 e= threading.Event()
 semaphore= threading.Semaphore()
 
@@ -68,9 +93,14 @@ def createcustomer(clientC, primaryClientCount):
 def siparişVer(clientNo):
     print("waiter callling")
     writeToLog("Waiter calling")
-    callwaiterEvent.set()
-    orderqueue.put("sipariş koyuldu -{}-".format(clientNo))
-    writeToLog("sipariş kuyruğa koyuldu -{}-".format(clientNo))
+    orderQueue.signal()
+    waiterQueue.wait()
+    orderqueue.put("order created -{}-".format(clientNo))
+    writeToLog("order created in queue-{}-".format(clientNo))
+
+def customerDie(clientNo):
+    writeToLog(f"{clientNo}. thread Leaving")
+    barrier.release()
 
 def oncelikli_masaya_yerlestir(clientNo):
     global barrier
@@ -78,9 +108,10 @@ def oncelikli_masaya_yerlestir(clientNo):
 
     if clientsId[clientNo][1]!=0:
         barrier.acquire()
-        writeToLog(f"{clientNo}. thread Masaya yerlestirildi   öncelikli")
+        writeToLog(f"{clientNo}. thread sitted to Desk Primer")
         print(f"{clientNo}. thread yerlestirildi   öncelikli")
         siparişVer(clientNo)
+        customerDie(clientNo)
 
     semaphore.acquire()
     customercount+=1
@@ -97,18 +128,23 @@ def rastgele_masaya_yerlestir(clientNo):
         if clientsId[clientNo][1]==0:
             barrier.acquire()
             print(f"{clientNo}. thread yerlestirildi")
-            writeToLog(f"{clientNo}. thread Masaya yerlestirildi")
+            writeToLog(f"{clientNo}. thread sitted to Desk")
+
             siparişVer(clientNo)
-            time.sleep(1)
+            customerDie(clientNo)
 
 def calistir(thread_id):
     writeToLog("customer Created ID : " + str(thread_id))
+    time.sleep(0.5)
     oncelikli_masaya_yerlestir(thread_id)
     rastgele_masaya_yerlestir(thread_id)
 
 def start(deskC, waiterCount, checkoutCount, chefCount):
+        global barrier
         global deskCount
         deskCount = deskC
+
+        barrier = threading.Semaphore(value=deskCount)
 
         for waiterIndex in range(int(waiterCount)):
             waiterThread = threading.Thread(target=waiterstart, args=(threading.get_ident(),))
@@ -137,20 +173,18 @@ def start(deskC, waiterCount, checkoutCount, chefCount):
         for chefThread in chefThreads:
             chefThread.join()
 
+
 def waiterstart(id):
+    isEnd = False
     print("waiter started")
     writeToLog("Waiter Started and waiting for call")
-    sMutex.acquire()
-    callwaiterEvent.wait()
-    callwaiterEvent.clear()
-    sMutex.release()
-    data = orderqueue.get()
-    writeToLog("sipariş kuyruktan alindi : {}".format(data))
-
-    writeToLog("Waiter called")
-    print(waiterThreads[0].ident)
-
-    writeToLog("chef will be called after that")
+    while not isEnd:
+        waiterQueue.signal()
+        orderQueue.wait()
+        data = str(orderqueue.get()).split("-")[1]
+        writeToLog("order tooked  order given no : {}".format(data))
+        print(waiterThreads[0].ident)
+        writeToLog("chef will be called after that")
 
 def checkoutstart(id):
     writeToLog("Checkout Started")
@@ -158,5 +192,5 @@ def checkoutstart(id):
 def chefstart(id):
     writeToLog("Chef Started")
 
-createcustomer(6,2)
-start(2,2,2,2)
+#createcustomer(6,2)
+#start(2,2,2,2)
