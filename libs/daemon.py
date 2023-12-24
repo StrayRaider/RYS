@@ -49,14 +49,23 @@ sMutex =  threading.Semaphore()
 
 
 orderqueue = queue.Queue()
+waiterQueue = queue.Queue()
 
 waiterThreads = []
 checoutThreads = []
 chefThreads = []
 clientThreads=[]
 
-waiterQueue = ModifiedSemaphore(0)
-orderQueue = ModifiedSemaphore(0)
+waiterSemaphore = ModifiedSemaphore(0)
+orderSemaphore = ModifiedSemaphore(0)
+
+checkoutcameQueue = ModifiedSemaphore(0)
+checkoutQueue = ModifiedSemaphore(0)
+
+orderTook = ModifiedSemaphore(0)
+
+chefSemaphore = ModifiedSemaphore(0)
+chefWaiterSemaphore = ModifiedSemaphore(0)
 
 clientCount=10
 primaryClientCount=2
@@ -91,12 +100,21 @@ def createcustomer(clientC, primaryClientCount):
         time.sleep(0.1)
 
 def siparişVer(clientNo):
-    print("waiter callling")
-    writeToLog("Waiter calling")
-    orderQueue.signal()
-    waiterQueue.wait()
+    writeToLog(f"{clientNo}. Waiter calling")
+    orderSemaphore.signal()
+    waiterSemaphore.wait()
     orderqueue.put("order created -{}-".format(clientNo))
-    writeToLog("order created in queue-{}-".format(clientNo))
+    writeToLog(f"{clientNo}. order created in queue -{clientNo}-")
+    orderTook.wait()
+
+    pay(clientNo)
+
+def pay(clientNo):
+    writeToLog(f"{clientNo}. paymanet waiting client")
+    checkoutcameQueue.signal()
+    checkoutQueue.wait()
+    writeToLog(f"{clientNo}. paymanet done from client")
+    customerDie(clientNo)
 
 def customerDie(clientNo):
     writeToLog(f"{clientNo}. thread Leaving")
@@ -109,9 +127,6 @@ def oncelikli_masaya_yerlestir(clientNo):
     if clientsId[clientNo][1]!=0:
         barrier.acquire()
         writeToLog(f"{clientNo}. thread sitted to Desk Primer")
-        print(f"{clientNo}. thread yerlestirildi   öncelikli")
-        siparişVer(clientNo)
-        customerDie(clientNo)
 
     semaphore.acquire()
     customercount+=1
@@ -121,17 +136,17 @@ def oncelikli_masaya_yerlestir(clientNo):
     
     semaphore.release()
 
+    if clientsId[clientNo][1]!=0:
+        siparişVer(clientNo)
+
 def rastgele_masaya_yerlestir(clientNo):
     global barrier
     e.wait()
     if e.is_set():
         if clientsId[clientNo][1]==0:
             barrier.acquire()
-            print(f"{clientNo}. thread yerlestirildi")
             writeToLog(f"{clientNo}. thread sitted to Desk")
-
             siparişVer(clientNo)
-            customerDie(clientNo)
 
 def calistir(thread_id):
     writeToLog("customer Created ID : " + str(thread_id))
@@ -147,19 +162,19 @@ def start(deskC, waiterCount, checkoutCount, chefCount):
         barrier = threading.Semaphore(value=deskCount)
 
         for waiterIndex in range(int(waiterCount)):
-            waiterThread = threading.Thread(target=waiterstart, args=(threading.get_ident(),))
+            waiterThread = threading.Thread(target=waiterstart, args=())
             waiterThreads.append(waiterThread)
             waiterThread.start()
         writeToLog('{} waiter thread created \n'.format(waiterCount))
 
         for checkoutIndex in range(int(checkoutCount)):
-            checoutThread = threading.Thread(target=checkoutstart, args=(threading.get_ident(),))
+            checoutThread = threading.Thread(target=checkoutstart, args=())
             checoutThreads.append(checoutThread)
             checoutThread.start()
         writeToLog('{} checout thread created \n'.format(checkoutCount))
 
         for chefIndex in range(int(chefCount)):
-            chefThread = threading.Thread(target=chefstart, args=(threading.get_ident(),))
+            chefThread = threading.Thread(target=chefstart, args=())
             chefThreads.append(chefThread)
             chefThread.start()
         writeToLog('{} chef thread created \n'.format(chefCount))
@@ -174,23 +189,46 @@ def start(deskC, waiterCount, checkoutCount, chefCount):
             chefThread.join()
 
 
-def waiterstart(id):
+def waiterstart():
+    id = threading.get_ident()
     isEnd = False
-    print("waiter started")
-    writeToLog("Waiter Started and waiting for call")
+    writeToLog(f"waiter {id} : Waiter Started and waiting for call")
     while not isEnd:
-        waiterQueue.signal()
-        orderQueue.wait()
+        waiterSemaphore.signal()
+        orderSemaphore.wait()
         data = str(orderqueue.get()).split("-")[1]
-        writeToLog("order tooked  order given no : {}".format(data))
-        print(waiterThreads[0].ident)
-        writeToLog("chef will be called after that")
+        writeToLog(f"waiter {id} : order tooked order given no : {data}")
+        time.sleep(5)
+        writeToLog(f"waiter {id} :  chef will be called after that")
+        
+        waiterQueue.put(data)
+        writeToLog("chef calling")
+        chefWaiterSemaphore.signal()
+        chefSemaphore.wait()
+        writeToLog("here")
 
-def checkoutstart(id):
-    writeToLog("Checkout Started")
+def checkoutstart():
+    id = threading.get_ident()
+    isEnd = False
+    writeToLog(f"checkout {id} :  Started")
+    while not isEnd:
+        checkoutQueue.signal()
+        checkoutcameQueue.wait()
+        writeToLog(f"checkout {id} : payment tooking")
 
-def chefstart(id):
-    writeToLog("Chef Started")
+def chefstart():
+    id=threading.get_ident()
+    writeToLog(f"Chef {id} started and waiting for order") 
+    while True:
+        chefSemaphore.signal()
+        chefWaiterSemaphore.wait()
+        data= str(waiterQueue.get())
+        print("chef tooked the order from waiter")
+        writeToLog(f"chef {id}:tooked the order given no: {data}")
+        time.sleep(5)
+        writeToLog(f"chef {id}: order no {data} ready")
+        orderTook.signal()
+        #kasa işlemi
 
-#createcustomer(6,2)
-#start(2,2,2,2)
+createcustomer(6,2)
+start(4,2,1,2)

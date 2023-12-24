@@ -1,20 +1,96 @@
 Daemon Started 
-Waiter Started and waiting for call 
+customer Created ID : 0 
+customer Created ID : 1 
+customer Created ID : 2 
+customer Created ID : 3 
+customer Created ID : 4 
+customer Created ID : 5 
+waiter 6132 : Waiter Started and waiting for call 
+waiter 2908 : Waiter Started and waiting for call 
 2 waiter thread created 
  
-Waiter Started and waiting for call 
-Checkout Started 
+checkout 1396 :  Started 
 1 checout thread created 
  
-Chef Started 
-Chef Started 
-Chef Started 
-Chef Started 
-4 chef thread created 
+Chef 2792 started and waiting for order 
+Chef 5416 started and waiting for order 
+2 chef thread created 
  
-Waiter calling 
-Waiter calling 
-order tooked : sipariþ koyuldu -13552- 
-Waiter called 
-order tooked : sipariþ koyuldu -13644- 
-Waiter called 
+4. thread sitted to Desk Primer 
+4. Waiter calling 
+4. order created in queue -4- 
+waiter 6132 : order tooked order given no : 4 
+5. thread sitted to Desk Primer 
+5. Waiter calling 
+5. order created in queue -5- 
+1. thread sitted to Desk 
+1. Waiter calling 
+waiter 2908 : order tooked order given no : 5 
+0. thread sitted to Desk 
+0. Waiter calling 
+waiter 6132 :  chef will be called after that 
+chef calling 
+here 
+1. order created in queue -1- 
+waiter 6132 : order tooked order given no : 1 
+chef 2792:tooked the order given no: 4 
+waiter 2908 :  chef will be called after that 
+chef calling 
+here 
+0. order created in queue -0- 
+chef 5416:tooked the order given no: 5 
+waiter 2908 : order tooked order given no : 0 
+waiter 6132 :  chef will be called after that 
+chef calling 
+chef 2792: order no 4 ready 
+4. paymanet waiting client 
+4. paymanet done from client 
+4. thread Leaving 
+checkout 1396 : payment tooking 
+chef 2792:tooked the order given no: 1 
+here 
+2. thread sitted to Desk 
+2. Waiter calling 
+2. order created in queue -2- 
+waiter 6132 : order tooked order given no : 2 
+chef 5416: order no 5 ready 
+waiter 2908 :  chef will be called after that 
+chef calling 
+here 
+5. paymanet waiting client 
+5. paymanet done from client 
+5. thread Leaving 
+checkout 1396 : payment tooking 
+chef 5416:tooked the order given no: 0 
+3. thread sitted to Desk 
+3. Waiter calling 
+3. order created in queue -3- 
+waiter 2908 : order tooked order given no : 3 
+chef 2792: order no 1 ready 
+1. paymanet waiting client 
+1. paymanet done from client 
+1. thread Leaving 
+checkout 1396 : payment tooking 
+waiter 6132 :  chef will be called after that 
+chef calling 
+here 
+chef 2792:tooked the order given no: 2 
+chef 5416: order no 0 ready 
+0. paymanet waiting client 
+0. paymanet done from client 
+0. thread Leaving 
+checkout 1396 : payment tooking 
+waiter 2908 :  chef will be called after that 
+chef calling 
+here 
+chef 5416:tooked the order given no: 3 
+chef 2792: order no 2 ready 
+2. paymanet waiting client 
+2. paymanet done from client 
+2. thread Leaving 
+checkout 1396 : payment tooking 
+chef 5416: order no 3 ready 
+3. paymanet waiting client 
+3. paymanet done from client 
+3. thread Leaving 
+checkout 1396 : payment tooking 
