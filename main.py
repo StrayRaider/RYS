@@ -238,14 +238,14 @@ class Problem1(tk.Frame):
         labelPrimClient.grid(row = 10, column = 5, padx = 10, pady = 10)
         primClientEntery =ttk.Entry(self, width=15)
         primClientEntery.grid(row = 10, column = 6, padx = 10, pady = 10)
-        clientButton= ttk.Button(self,text="müşteri giris",command = lambda : daemon.createcustomer(int(clientEntery.get()),int(primClientEntery.get())))
+        clientButton= ttk.Button(self,text="müşteri giris",command = lambda : daemon.createcustomer(int(clientEntery.get()),int(primClientEntery.get()),self.desk))
         clientButton.grid(row = 10, column = 7, padx = 10, pady = 10)
 
-        daemonThread = threading.Thread(target=daemon.start, args=(int(self.controller.deskCount), int(self.controller.waiterCount), int(self.controller.checkoutCount), int(self.controller.chefCount),))
+        daemonThread = threading.Thread(target=daemon.start, args=(int(self.controller.deskCount), int(self.controller.waiterCount), int(self.controller.checkoutCount), int(self.controller.chefCount),self.desk,self.waiter,self.checkout,self.chef))
         daemonThread.start()
         #daemonThread.join()
         #daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
-        self.updateStates()
+        #self.updateStates()
 
     def updateStates(self):
         # get waiter id's
@@ -279,7 +279,7 @@ class Problem1(tk.Frame):
             except:
                 print("waiter index error")
             index += 1
-        app.after(500, self.updateStates)
+        #app.after(500, self.updateStates)
 
   
 # Driver Code

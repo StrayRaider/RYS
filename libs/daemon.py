@@ -2,6 +2,7 @@ import threading
 import time
 import random
 import queue
+from tkinter import ttk
 
 class ModifiedSemaphore:
     def __init__(self, initial):
@@ -79,8 +80,9 @@ e= threading.Event()
 semaphore= threading.Semaphore()
 
 customercount=0
+deskQueue = queue.Queue()
 
-def createcustomer(clientC, primaryClientCount):
+def createcustomer(clientC, primaryClientCount,desklabels):
     global customercount, clientsId, clientCount
     e.clear()
     customercount = 0
@@ -95,7 +97,7 @@ def createcustomer(clientC, primaryClientCount):
         clientsId[id+clientCount-primaryClientCount][1]=1,
 
     for clientId in range(len(clientsId)):
-        t=threading.Thread(target=calistir, args=(clientsId[clientId][0],))
+        t=threading.Thread(target=calistir, args=(clientsId[clientId][0],desklabels))
         t.start()
         clientThreads.append(t)
         time.sleep(0.1)
@@ -124,9 +126,13 @@ def customerDie(clientNo):
 def oncelikli_masaya_yerlestir(clientNo):
     global barrier
     global customercount
-
+    desk = False
     if clientsId[clientNo][1]!=0:
         barrier.acquire()
+        desk = deskQueue.get()
+        style = ttk.Style()
+        style.configure("deskfull.TLabel", background="green", foreground='blue')
+        desk.config(text= "masa görevde",style="deskfull.TLabel")
         writeToLog(f"{clientNo}. thread sitted to Desk Primer")
 
     semaphore.acquire()
@@ -138,6 +144,11 @@ def oncelikli_masaya_yerlestir(clientNo):
 
     if clientsId[clientNo][1]!=0:
         siparişVer(clientNo)
+    if desk != False:
+        deskQueue.put(desk)
+        style = ttk.Style()
+        style.configure("deskfree.TLabel", background="gray", foreground='blue')
+        desk.config(text= "masa görevde değil",style="deskfree.TLabel")
 
 def rastgele_masaya_yerlestir(clientNo):
     global barrier
@@ -145,36 +156,51 @@ def rastgele_masaya_yerlestir(clientNo):
     if e.is_set():
         if clientsId[clientNo][1]==0:
             barrier.acquire()
+            desk = deskQueue.get()
+            style = ttk.Style()
+            style.configure("deskfull.TLabel", background="green", foreground='blue')
+            desk.config(text= "masa görevde",style="deskfull.TLabel")
             writeToLog(f"{clientNo}. thread sitted to Desk")
             siparişVer(clientNo)
+            deskQueue.put(desk)
+            style = ttk.Style()
+            style.configure("deskfree.TLabel", background="gray", foreground='blue')
+            desk.config(text= "masa görevde değil",style="deskfree.TLabel")
 
-def calistir(thread_id):
+def calistir(thread_id,desklabel):
     writeToLog("customer Created ID : " + str(thread_id))
+
     time.sleep(0.5)
     oncelikli_masaya_yerlestir(thread_id)
     rastgele_masaya_yerlestir(thread_id)
 
-def start(deskC, waiterCount, checkoutCount, chefCount):
+
+
+
+def start(deskC, waiterCount, checkoutCount, chefCount,desklabels,waiterLabels, checkoutLabels, chefLabels):
         global barrier
         global deskCount
         deskCount = deskC
 
         barrier = threading.Semaphore(value=deskCount)
 
+        for i in desklabels:
+            deskQueue.put(i)
+
         for waiterIndex in range(int(waiterCount)):
-            waiterThread = threading.Thread(target=waiterstart, args=())
+            waiterThread = threading.Thread(target=waiterstart, args=([waiterLabels[waiterIndex]]))
             waiterThreads.append(waiterThread)
             waiterThread.start()
         writeToLog('{} waiter thread created \n'.format(waiterCount))
 
         for checkoutIndex in range(int(checkoutCount)):
-            checoutThread = threading.Thread(target=checkoutstart, args=())
+            checoutThread = threading.Thread(target=checkoutstart, args=([checkoutLabels[checkoutIndex]]))
             checoutThreads.append(checoutThread)
             checoutThread.start()
         writeToLog('{} checout thread created \n'.format(checkoutCount))
 
         for chefIndex in range(int(chefCount)):
-            chefThread = threading.Thread(target=chefstart, args=())
+            chefThread = threading.Thread(target=chefstart, args=([chefLabels[chefIndex]]))
             chefThreads.append(chefThread)
             chefThread.start()
         writeToLog('{} chef thread created \n'.format(chefCount))
@@ -189,7 +215,7 @@ def start(deskC, waiterCount, checkoutCount, chefCount):
             chefThread.join()
 
 
-def waiterstart():
+def waiterstart(waiterLabels):
     id = threading.get_ident()
     isEnd = False
     writeToLog(f"waiter {id} : Waiter Started and waiting for call")
@@ -198,16 +224,24 @@ def waiterstart():
         orderSemaphore.wait()
         data = str(orderqueue.get()).split("-")[1]
         writeToLog(f"waiter {id} : order tooked order given no : {data}")
+        #
+        style = ttk.Style()
+        style.configure("waitertask.TLabel", background="green", foreground='blue')
+        waiterLabels[1].config(text= "garson görevde",style="waitertask.TLabel")
+
+        #
         time.sleep(5)
         writeToLog(f"waiter {id} :  chef will be called after that")
-        
+        style.configure("waiterfree.TLabel", background="gray", foreground='blue')
+        waiterLabels[1].config(text= "garson görevde değil",style="waiterfree.TLabel")
+        #
         waiterQueue.put(data)
         writeToLog("chef calling")
         chefWaiterSemaphore.signal()
         chefSemaphore.wait()
         writeToLog("here")
 
-def checkoutstart():
+def checkoutstart(checkoutLabels):
     id = threading.get_ident()
     isEnd = False
     writeToLog(f"checkout {id} :  Started")
@@ -215,8 +249,16 @@ def checkoutstart():
         checkoutQueue.signal()
         checkoutcameQueue.wait()
         writeToLog(f"checkout {id} : payment tooking")
+        style = ttk.Style()
+        style.configure("waitertask.TLabel", background="green", foreground='blue')
+        checkoutLabels[1].config(text= "kasa görevde",style="waitertask.TLabel")
+        time.sleep(5)
+        style.configure("waiterfree.TLabel", background="gray", foreground='blue')
+        checkoutLabels[1].config(text= "kasa görevde değil",style="waiterfree.TLabel")
 
-def chefstart():
+
+
+def chefstart(chefLabels):
     id=threading.get_ident()
     writeToLog(f"Chef {id} started and waiting for order") 
     while True:
@@ -225,10 +267,13 @@ def chefstart():
         data= str(waiterQueue.get())
         print("chef tooked the order from waiter")
         writeToLog(f"chef {id}:tooked the order given no: {data}")
+        style = ttk.Style()
+        style.configure("waitertask.TLabel", background="green", foreground='blue')
+        chefLabels[1].config(text= "asci görevde",style="waitertask.TLabel")
         time.sleep(5)
         writeToLog(f"chef {id}: order no {data} ready")
+        style.configure("waiterfree.TLabel", background="gray", foreground='blue')
+        chefLabels[1].config(text= "aşçı görevde değil",style="waiterfree.TLabel")
         orderTook.signal()
-        #kasa işlemi
-
 #createcustomer(6,2)
 #start(4,2,1,2)
