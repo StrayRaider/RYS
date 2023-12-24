@@ -82,6 +82,7 @@ customercount=0
 
 def createcustomer(clientC, primaryClientCount):
     global customercount, clientsId, clientCount
+    e.clear()
     customercount = 0
     clientCount = clientC
 
@@ -131,7 +132,6 @@ def oncelikli_masaya_yerlestir(clientNo):
     semaphore.acquire()
     customercount+=1
     if customercount==clientCount:#9+1==10 
-        # print("e setted",clientCount)
         e.set()
     
     semaphore.release()
@@ -230,5 +230,5 @@ def chefstart():
         orderTook.signal()
         #kasa işlemi
 
-createcustomer(6,2)
-start(4,2,1,2)
+#createcustomer(6,2)
+#start(4,2,1,2)
