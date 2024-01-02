@@ -37,7 +37,7 @@ with open('log.txt', 'w') as f:
 
 
 willTakedOrderCount=0
-
+clientTimeout = 20
 waiterSleep = 2
 checkoutSleep = 1
 cookmealSleep = 3
@@ -251,6 +251,7 @@ def customerDie(clientNo):
 def oncelikli_masaya_yerlestir(clientNo):
     global barrier
     global customercount
+    global clientTimeout
     desk = False
     if clientsId[clientNo][1]!=0:
         waitBarrierTime = time.time() 
@@ -258,7 +259,7 @@ def oncelikli_masaya_yerlestir(clientNo):
         getintoBarrierTime = time.time()
         timeout = getintoBarrierTime - waitBarrierTime
         print("timeout is here : ", timeout)
-        if timeout > 20:
+        if timeout > clientTimeout:
             print("this thread will be dead")
             writeToLog(f" client {clientNo} : thread dead")
 
@@ -324,17 +325,29 @@ def calistir(thread_id,desklabel):
 waiterC=0
 chefC=0
 
-def start(deskC, waiterCount, checkoutCount, chefCount,desklabels,waiterLabels, checkoutLabels, chefLabels):
+def start(deskC, waiterCount, checkoutCount, chefCount,desklabels,waiterLabels, checkoutLabels, chefLabels, waiterS, checkoutS, cookmealS, eatmealS, clientT):
         global barrier
         global deskCount
         global waiterC
         global chefC
         global checkoutC
+        global waiterSleep
+        global checkoutSleep
+        global cookmealSleep
+        global eatmealSleep
+        global clientTimeout
+
         waiterC=waiterCount
         chefC=chefCount 
         checkoutC=checkoutCount
 
         deskCount = deskC
+
+        waiterSleep = waiterS
+        checkoutSleep = checkoutS
+        cookmealSleep = cookmealS
+        eatmealSleep = eatmealS
+        clientTimeout = clientT
 
         barrier = threading.Semaphore(value=deskCount)
 

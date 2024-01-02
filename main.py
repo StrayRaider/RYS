@@ -15,6 +15,11 @@ class tkinterApp(tk.Tk):
         self.chefCount = 0
         self.waiterCount = 0
         self.checkoutCount = 0
+        self.waiterS = 0
+        self.checkoutS = 0
+        self.cookmealS = 0
+        self.eatmealS = 0
+        self.clientTimeout = 0
          
         # creating a container
         width= self.winfo_screenwidth()               
@@ -102,37 +107,82 @@ class P1Entery(tk.Frame):
 
         self.deskentery =ttk.Entry(self, width=35)
         self.deskentery.grid(row = 1, column = 3, padx = 10, pady = 10)
+        self.deskentery.insert(0, 6)
 
         cheflabel = ttk.Label(self, text="Enter Chef Number")
         cheflabel.grid(row = 2, column = 2, padx = 10, pady = 10)
 
         self.chefentery =ttk.Entry(self, width=35)
         self.chefentery.grid(row = 2, column = 3, padx = 10, pady = 10)
+        self.chefentery.insert(0, 2)
 
         waiterlabel = ttk.Label(self, text="Enter Waiter Number")
         waiterlabel.grid(row = 3, column = 2, padx = 10, pady = 10)
 
         self.waiterentery =ttk.Entry(self, width=35)
         self.waiterentery.grid(row = 3, column = 3, padx = 10, pady = 10)
+        self.waiterentery.insert(0, 3)
 
         checkoutlabel = ttk.Label(self, text="Enter Checkout Number")
         checkoutlabel.grid(row = 4, column = 2, padx = 10, pady = 10)
 
         self.checkoutentery =ttk.Entry(self, width=35)
         self.checkoutentery.grid(row = 4, column = 3, padx = 10, pady = 10)
+        self.checkoutentery.insert(0, 1)
+
+        waiterSlabel = ttk.Label(self, text="Enter Waiter Sleep Time")
+        waiterSlabel.grid(row = 5, column = 2, padx = 10, pady = 10)
+
+        self.waiterSentery =ttk.Entry(self, width=35)
+        self.waiterSentery.grid(row = 5, column = 3, padx = 10, pady = 10)
+        self.waiterSentery.insert(0, 2)
+
+        checkoutSlabel = ttk.Label(self, text="Enter Checkout Sleep Time")
+        checkoutSlabel.grid(row = 6, column = 2, padx = 10, pady = 10)
+
+        self.checkoutSentery =ttk.Entry(self, width=35)
+        self.checkoutSentery.grid(row = 6, column = 3, padx = 10, pady = 10)
+        self.checkoutSentery.insert(0, 1)
+
+        cookmealSlabel = ttk.Label(self, text="Enter Cook Meal Sleep Time")
+        cookmealSlabel.grid(row = 7, column = 2, padx = 10, pady = 10)
+
+        self.cookmealSentery =ttk.Entry(self, width=35)
+        self.cookmealSentery.grid(row = 7, column = 3, padx = 10, pady = 10)
+        self.cookmealSentery.insert(0, 3)
+
+        eatmealSlabel = ttk.Label(self, text="Enter Eat Meal Sleep Time")
+        eatmealSlabel.grid(row = 8, column = 2, padx = 10, pady = 10)
+
+        self.eatmealSentery =ttk.Entry(self, width=35)
+        self.eatmealSentery.grid(row = 8, column = 3, padx = 10, pady = 10)
+        self.eatmealSentery.insert(0, 3)
+
+        clientTimeoutlabel = ttk.Label(self, text="Enter Client Timeout")
+        clientTimeoutlabel.grid(row = 9, column = 2, padx = 10, pady = 10)
+
+        self.clientTimeoutentery =ttk.Entry(self, width=35)
+        self.clientTimeoutentery.grid(row = 9, column = 3, padx = 10, pady = 10)
+        self.clientTimeoutentery.insert(0, 20)
+
 
         button1 = ttk.Button(self, text ="Start",
                             command = lambda : self.startProblem1(controller))
      
         # putting the button in its place 
         # by using grid
-        button1.grid(row = 5, column = 2, padx = 10, pady = 10)
+        button1.grid(row = 10, column = 2, padx = 10, pady = 10)
 
     def startProblem1(self,controller):
         controller.deskCount = self.deskentery.get()
         controller.chefCount = self.chefentery.get()
         controller.waiterCount = self.waiterentery.get()
         controller.checkoutCount = self.checkoutentery.get()
+        controller.waiterS = self.waiterSentery.get()
+        controller.checkoutS = self.checkoutSentery.get()
+        controller.cookmealS = self.cookmealSentery.get()
+        controller.eatmealS = self.eatmealSentery.get()
+        controller.clientTimeout = self.clientTimeoutentery.get()
         controller.show_frame(Problem1)
         controller.frames[Problem1].start()
   
@@ -263,7 +313,11 @@ class Problem1(tk.Frame):
         clientButton= ttk.Button(self,text="müşteri giris",command = lambda : daemon.createcustomer(int(clientEntery.get()),int(primClientEntery.get()),self.desk))
         clientButton.grid(row = int(self.controller.waiterCount)+6, column = 7, padx = 10, pady = 10)
 
-        daemonThread = threading.Thread(target=daemon.start, args=(int(self.controller.deskCount), int(self.controller.waiterCount), int(self.controller.checkoutCount), int(self.controller.chefCount),self.desk,self.waiter,self.checkout,self.chef))
+        daemonThread = threading.Thread(target=daemon.start, args=(int(self.controller.deskCount), int(self.controller.waiterCount),
+                                                                   int(self.controller.checkoutCount), int(self.controller.chefCount),
+                                                                   self.desk,self.waiter,self.checkout,self.chef, int(self.controller.waiterS),
+                                                                   int(self.controller.checkoutS) ,int(self.controller.cookmealS) ,
+                                                                   int(self.controller.eatmealS), int(self.controller.clientTimeout)))
         daemonThread.start()
 
     def updateStates(self):
