@@ -38,6 +38,11 @@ with open('log.txt', 'w') as f:
 
 willTakedOrderCount=0
 
+waiterSleep = 2
+checkoutSleep = 1
+cookmealSleep = 3
+eatmealSleep = 3
+
 writeLogMutex = threading.Semaphore()
 
 def writeToLog(textToWrite):
@@ -54,6 +59,9 @@ sMutex =  threading.Semaphore()
 
 orderqueue = queue.Queue()
 waiterQueue = queue.Queue()
+readymealsqueue = queue.Queue()
+eatedMeals = queue.Queue()
+checkoutDonequeue = queue.Queue()
 
 waiterThreads = []
 checoutThreads = []
@@ -67,6 +75,7 @@ checkoutcameQueue = ModifiedSemaphore(0)
 checkoutQueue = ModifiedSemaphore(0)
 
 orderTook = ModifiedSemaphore(0)
+checkoutDone = ModifiedSemaphore(0)
 
 chefSemaphore = ModifiedSemaphore(0)
 chefWaiterSemaphore = ModifiedSemaphore(0)
@@ -108,7 +117,7 @@ def waiterBtn(showOrderCount):
 sendOrderToChefSemaphore=ModifiedSemaphore(0)
 def sendOrderToChefBtn(showFoodCount):
     global foodCount
-    sendOrderToChefSemaphore.signaln(chefC)
+    sendOrderToChefSemaphore.signaln(chefC*2)
     showFoodCount.config(text="hazirlanacak siparis sayisi"+str(foodCount))
 
 
@@ -154,13 +163,75 @@ def createcustomer(clientC, primaryClientCount,desklabels):
         clientThreads.append(t)
         time.sleep(0.1)
 
+def getmeal(target_data):
+    global readymealsqueue
+    while 1:
+        my_queue = readymealsqueue
+        temp_queue = queue.Queue()
+
+        found = False
+    # Dequeue elements until finding the target data or reaching the end of the queue
+        while not my_queue.empty():
+            item = my_queue.get()
+            print("getted : ", item)
+
+            if int(item) == int(target_data):
+                print(f"Found {target_data} in the queue!")
+                found = True
+                break
+            else:
+                temp_queue.put(item)
+
+        # Enqueue back the elements to the original queue
+        while not temp_queue.empty():
+            my_queue.put(temp_queue.get())
+
+        if not found:
+            print(f"{target_data} not found in the queue.")
+        else:
+            break
+
+def getpayment(target_data):
+    global checkoutDonequeue
+    while 1:
+        my_queue = checkoutDonequeue
+        temp_queue = queue.Queue()
+
+        found = False
+    # Dequeue elements until finding the target data or reaching the end of the queue
+        while not my_queue.empty():
+            item = my_queue.get()
+            print("getted : ", item)
+
+            if int(item) == int(target_data):
+                print(f"Found {target_data} in the queue!")
+                found = True
+                break
+            else:
+                temp_queue.put(item)
+
+        # Enqueue back the elements to the original queue
+        while not temp_queue.empty():
+            my_queue.put(temp_queue.get())
+
+        if not found:
+            print(f"{target_data} not found in the queue.")
+        else:
+            break
+
 def siparişVer(clientNo):
     writeToLog(f"{clientNo}. Waiter calling")
     orderSemaphore.signal()
     waiterSemaphore.wait()
-    orderqueue.put("order created -{}-".format(clientNo))
+    orderqueue.put(clientNo)
     writeToLog(f"{clientNo}. order created in queue -{clientNo}-")
+    #yemeği yemeli
+    writeToLog(f"{clientNo}. meal tooked and started to eat -{clientNo}-")
+    getmeal(clientNo)
     orderTook.wait()
+    time.sleep(eatmealSleep)
+    writeToLog(f"{clientNo}. meal eated -{clientNo}-")
+    eatedMeals.put(clientNo)
     pay(clientNo)
 
 def pay(clientNo):
@@ -170,6 +241,8 @@ def pay(clientNo):
     checkoutcameQueue.signal()
     checkoutQueue.wait()
     writeToLog(f"{clientNo}. paymanet done from client")
+    getpayment(clientNo)
+    checkoutDone.wait()
     customerDie(clientNo)
 
 def customerDie(clientNo):
@@ -194,7 +267,7 @@ def oncelikli_masaya_yerlestir(clientNo):
         desk = deskQueue.get()
         style = ttk.Style()
         style.configure("deskfull.TLabel", background="green", foreground='blue')
-        desk.config(text= "masa görevde",style="deskfull.TLabel")
+        desk.config(text= f"masa görevde no : {clientNo}",style="deskfull.TLabel")
         writeToLog(f"{clientNo}. thread sitted to Desk Primer")
 
     semaphore.acquire()
@@ -225,13 +298,13 @@ def rastgele_masaya_yerlestir(clientNo):
             print("timeout is here : ", timeout)
             if timeout > 20:
                 print("this thread will be dead")
-                writeToLog(f" client {clientNo} : thread dead")
+                writeToLog(f"Timeout : client {clientNo} : thread dead")
                 barrier.release()
                 return
             desk = deskQueue.get()
             style = ttk.Style()
             style.configure("deskfull.TLabel", background="green", foreground='blue')
-            desk.config(text= "masa görevde",style="deskfull.TLabel")
+            desk.config(text= f"masa görevde no : {clientNo}",style="deskfull.TLabel")
             writeToLog(f"{clientNo}. thread sitted to Desk")
             siparişVer(clientNo)
             deskQueue.put(desk)
@@ -295,10 +368,8 @@ def start(deskC, waiterCount, checkoutCount, chefCount,desklabels,waiterLabels, 
         for chefThread in chefThreads:
             chefThread.join()
 
-
-
-
 def waiterstart(waiterLabels):
+    global waiterSleep
     id = threading.get_ident()
     isEnd = False
     writeToLog(f"waiter {id} : Waiter Started and waiting for call")
@@ -307,15 +378,15 @@ def waiterstart(waiterLabels):
         takeOrderSemaphore.wait()
         waiterSemaphore.signal()
         orderSemaphore.wait()
-        data = str(orderqueue.get()).split("-")[1]
+        data = orderqueue.get()
         writeToLog(f"waiter {id} : order tooked order given no : {data}")
         #
         style = ttk.Style()
         style.configure("waitertask.TLabel", background="green", foreground='blue')
-        waiterLabels[1].config(text= "garson görevde",style="waitertask.TLabel")
+        waiterLabels[1].config(text= f" {id} garson görevde müşteri no : {data}",style="waitertask.TLabel")
 
         #
-        time.sleep(5)
+        time.sleep(waiterSleep)
         sendOrderToChefSemaphore.wait()
         writeToLog(f"waiter {id} :  chef will be called after that")
         style.configure("waiterfree.TLabel", background="gray", foreground='blue')
@@ -329,19 +400,24 @@ def waiterstart(waiterLabels):
         writeToLog("here")
 
 def checkoutstart(checkoutLabels):
+    global checkoutSleep
     id = threading.get_ident()
     isEnd = False
     writeToLog(f"checkout {id} :  Started")
     while not isEnd:
         checkoutQueue.signal()
         checkoutcameQueue.wait()
-        writeToLog(f"checkout {id} : payment tooking")
+        data = eatedMeals.get()
+        writeToLog(f"checkout {id} : payment tooking client : {data}")
         style = ttk.Style()
         style.configure("checkoutTask.TLabel", background="green", foreground='blue')
-        checkoutLabels[1].config(text= "kasa görevde",style="checkoutTask.TLabel")
-        time.sleep(5)
+        checkoutLabels[1].config(text= f" {id} kasa görevde müşteri no : {data}",style="checkoutTask.TLabel")
+        time.sleep(checkoutSleep)
+        checkoutDonequeue.put(data)
+        writeToLog(f"checkout {id} : payment tooked client : {data}")
         style.configure("checoutfree.TLabel", background="gray", foreground='blue')
         checkoutLabels[1].config(text= "kasa görevde değil",style="checoutfree.TLabel")
+        checkoutDone.signal()
 
 
 """
@@ -394,7 +470,7 @@ def chefstart(chefLabels):
             startCookSemaphore.wait()
             ########################################
             style.configure("cheftask.TLabel", background="green", foreground='blue')
-            chefLabels[1].config(text= "asci görevde",style="cheftask.TLabel")
+            chefLabels[1].config(text= f" {id} aşçı görevde",style="cheftask.TLabel")
             writeToLog(f"Chef {id} : activated furnance {len(taskList)} ")
             t=threading.Thread(target=cookmeal, args=(chefLabels,taskList, id,len(taskList)+3))
             taskList.append(t)
@@ -404,23 +480,26 @@ def chefstart(chefLabels):
             time.sleep(1)
 
 def cookmeal(chefLabels, taskList, id, index):
+    global cookmealSleep
     data= str(waiterQueue.get())
     print("chef tooked the order from waiter")
     writeToLog(f"chef {id} , furnance {len(taskList)} : tooked the order given no: {data}")
     style = ttk.Style()
     style.configure("furnanceWorks.TLabel", background="green", foreground='blue')
-    chefLabels[index].config(text= "F",style="furnanceWorks.TLabel")
+    chefLabels[index].config(text= f"F {data}",style="furnanceWorks.TLabel")
     writeToLog(f"chef {id} , furnance {len(taskList)} : started to cook order {data}")
-    time.sleep(5)
+    time.sleep(cookmealSleep)
     writeToLog(f"chef {id} , furnance {len(taskList)} : order no {data} is ready")
+    print("puttedData : ", data)
 
     style = ttk.Style()
     style.configure("furnanceFree.TLabel", background="gray", foreground='blue')
-    chefLabels[index].config(text= "F",style="furnanceFree.TLabel")
+    chefLabels[index].config(text= f"F {data}",style="furnanceFree.TLabel")
     furnanceCountM.acquire()
     taskList.pop()
     furnanceCountM.release()
     writeToLog(f"chef {id} , furnance {len(taskList)} : closed")
+    readymealsqueue.put(data)
     orderTook.signal()
 
 

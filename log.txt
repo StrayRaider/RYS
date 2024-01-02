@@ -1,12 +1,86 @@
 Daemon Started 
-waiter 6788 : Waiter Started and waiting for call 
-waiter 14360 : Waiter Started and waiting for call 
-2 waiter thread created 
+waiter 5976 : Waiter Started and waiting for call 
+waiter 8640 : Waiter Started and waiting for call 
+waiter 6032 : Waiter Started and waiting for call 
+3 waiter thread created 
  
-checkout 8276 :  Started 
+checkout 13768 :  Started 
 1 checout thread created 
  
-Chef 3332 started and waiting for order 
-Chef 10256 started and waiting for order 
+Chef 7524 started and waiting for order 
+Chef 4304 started and waiting for order 
 2 chef thread created 
  
+customer Created ID : 0 
+customer Created ID : 1 
+customer Created ID : 2 
+customer Created ID : 3 
+customer Created ID : 4 
+customer Created ID : 5 
+customer Created ID : 6 
+customer Created ID : 7 
+6. thread sitted to Desk Primer 
+6. Waiter calling 
+7. thread sitted to Desk Primer 
+7. Waiter calling 
+4. thread sitted to Desk 
+4. Waiter calling 
+2. thread sitted to Desk 
+2. Waiter calling 
+0. thread sitted to Desk 
+0. Waiter calling 
+3. thread sitted to Desk 
+3. Waiter calling 
+6. order created in queue -6- 
+6. meal tooked and started to eat -6- 
+waiter 8640 : order tooked order given no : 6 
+waiter 6032 : order tooked order given no : 7 
+4. order created in queue -4- 
+4. meal tooked and started to eat -4- 
+7. order created in queue -7- 
+7. meal tooked and started to eat -7- 
+waiter 5976 : order tooked order given no : 4 
+waiter 5976 :  chef will be called after that 
+waiter 8640 :  chef will be called after that 
+waiter 6032 :  chef will be called after that 
+chef calling 
+here 
+chef calling 
+here 
+chef calling 
+Chef 7524 : activated furnance 0  
+Chef 4304 : activated furnance 0  
+here 
+chef 7524 , furnance 1 : tooked the order given no: 4 
+chef 4304 , furnance 1 : tooked the order given no: 6 
+chef 7524 , furnance 1 : started to cook order 4 
+chef 4304 , furnance 1 : started to cook order 6 
+chef 7524 , furnance 1 : order no 4 is ready 
+chef 4304 , furnance 1 : order no 6 is ready 
+chef 7524 , furnance 0 : closed 
+chef 4304 , furnance 0 : closed 
+4. meal eated -4- 
+4. paymanet waiting client 
+4. paymanet done from client 
+checkout 13768 : payment tooking client : 4 
+6. meal eated -6- 
+6. paymanet waiting client 
+checkout 13768 : payment tooked client : 4 
+checkout 13768 : payment tooking client : 6 
+4. thread Leaving 
+6. paymanet done from client 
+ client 5 : thread dead 
+ client 1 : thread dead 
+checkout 13768 : payment tooked client : 6 
+6. thread Leaving 
+Chef 4304 : activated furnance 0  
+chef 4304 , furnance 1 : tooked the order given no: 7 
+chef 4304 , furnance 1 : started to cook order 7 
+chef 4304 , furnance 1 : order no 7 is ready 
+chef 4304 , furnance 0 : closed 
+7. meal eated -7- 
+7. paymanet waiting client 
+7. paymanet done from client 
+checkout 13768 : payment tooking client : 7 
+checkout 13768 : payment tooked client : 7 
+7. thread Leaving 
