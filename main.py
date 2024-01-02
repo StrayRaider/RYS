@@ -222,30 +222,49 @@ class Problem1(tk.Frame):
             label.grid(row = chefIndex+2, column = 14, padx = 10, pady = 10)
             label2 = ttk.Label(self,text="........")
             label2.grid(row = chefIndex+2, column = 15, padx = 10, pady = 10)
+            
+            furnance1 = ttk.Label(self,text="f1")
+            furnance1.grid(row = chefIndex+2, column = 16, padx = 10, pady = 10)
+
+            furnance2 = ttk.Label(self,text="f2")
+            furnance2.grid(row = chefIndex+2, column = 17, padx = 10, pady = 10)
+
             button= ttk.Button(self,text="+")
-            button.grid(row = chefIndex+2, column = 16, padx = 10, pady = 10)
+            button.grid(row = chefIndex+2, column = 18, padx = 10, pady = 10)
 
-            self.chef.append([label,label2,button])
+            self.chef.append([label,label2,button,furnance1,furnance2])
 
-            spacelabel = ttk.Label(self,text=" ")
-            spacelabel.grid(row = chefIndex+2, column = 17, padx = 10, pady = 10)
+
+
+
+        showOrderCount= ttk.Label(self,text="alinacak siparis sayisi")
+        showOrderCount.grid(row = 1, column = 6, padx = 10, pady = 10)
+        showFoodCount= ttk.Label(self,text="hazirlacak siparis sayisi")
+        showFoodCount.grid(row = 1, column = 14, padx = 10, pady = 10)
+        ################
+        waiterTakeTheOrderBtn= ttk.Button(self,text="siparis al",command = lambda : daemon.waiterBtn(showOrderCount))
+        waiterTakeTheOrderBtn.grid(row = int(self.controller.waiterCount)+4, column = 6, padx = 10, pady = 10)
+        waiterSendOrderToChefBtn=ttk.Button(self,text="siparisi asciya ilet",command = lambda : daemon.sendOrderToChefBtn(showFoodCount))
+        waiterSendOrderToChefBtn.grid(row = int(self.controller.waiterCount)+4, column = 7, padx = 10, pady = 10)
+        startCookBtn=ttk.Button(self,text="siparisi hazirlamaya basla",command = lambda : daemon.chefCookBtn(showFoodCount))
+        startCookBtn.grid(row = int(self.controller.chefCount)+4, column = 15, padx = 10, pady = 10)
+        startPaymentBtn=ttk.Button(self,text="odemeleri al",command = lambda : daemon.paymentBtn())
+        startPaymentBtn.grid(row = int(self.controller.checkoutCount)+4, column = 11, padx = 10, pady = 10)
+        ##################
 
         labelClient = ttk.Label(self,text="musteri sayisini giriniz")
-        labelClient.grid(row = 10, column = 3, padx = 10, pady = 10)
+        labelClient.grid(row =  int(self.controller.waiterCount)+6, column = 3, padx = 10, pady = 10)
         clientEntery =ttk.Entry(self, width=15)
-        clientEntery.grid(row = 10, column = 4, padx = 10, pady = 10)
+        clientEntery.grid(row =int(self.controller.waiterCount)+6, column = 4, padx = 10, pady = 10)
         labelPrimClient = ttk.Label(self,text="öncelikli musteri sayisini giriniz")
-        labelPrimClient.grid(row = 10, column = 5, padx = 10, pady = 10)
+        labelPrimClient.grid(row = int(self.controller.waiterCount)+6, column = 5, padx = 10, pady = 10)
         primClientEntery =ttk.Entry(self, width=15)
-        primClientEntery.grid(row = 10, column = 6, padx = 10, pady = 10)
+        primClientEntery.grid(row = int(self.controller.waiterCount)+6, column = 6, padx = 10, pady = 10)
         clientButton= ttk.Button(self,text="müşteri giris",command = lambda : daemon.createcustomer(int(clientEntery.get()),int(primClientEntery.get()),self.desk))
-        clientButton.grid(row = 10, column = 7, padx = 10, pady = 10)
+        clientButton.grid(row = int(self.controller.waiterCount)+6, column = 7, padx = 10, pady = 10)
 
         daemonThread = threading.Thread(target=daemon.start, args=(int(self.controller.deskCount), int(self.controller.waiterCount), int(self.controller.checkoutCount), int(self.controller.chefCount),self.desk,self.waiter,self.checkout,self.chef))
         daemonThread.start()
-        #daemonThread.join()
-        #daemon.start(self.controller.deskCount, self.controller.waiterCount, self.controller.checkoutCount, self.controller.chefCount)
-        #self.updateStates()
 
     def updateStates(self):
         # get waiter id's

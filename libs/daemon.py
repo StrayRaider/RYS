@@ -35,6 +35,9 @@ with open('log.txt', 'w') as f:
     f.write("Daemon Started \n")
     f.close()
 
+
+willTakedOrderCount=0
+
 writeLogMutex = threading.Semaphore()
 
 def writeToLog(textToWrite):
@@ -71,6 +74,7 @@ chefWaiterSemaphore = ModifiedSemaphore(0)
 clientCount=10
 primaryClientCount=2
 deskCount=6
+checkoutC=0
 
 """bariyer 6 kişi gelene kadar bekler"""
 clientsId = [[0 for x in range(2)] for y in range(clientCount)]
@@ -82,11 +86,59 @@ semaphore= threading.Semaphore()
 customercount=0
 deskQueue = queue.Queue()
 
+
+takeOrderSemaphore=ModifiedSemaphore(0)
+foodCount=0
+def waiterBtn(showOrderCount):
+    global willTakedOrderCount,foodCount
+    #takeOrderSemaphore.signaln(waiterC)
+    if willTakedOrderCount>=waiterC:
+        takeOrderSemaphore.signaln(waiterC)
+        willTakedOrderCount-=waiterC
+        foodCount+=waiterC
+    elif willTakedOrderCount<waiterC:
+        takeOrderSemaphore.signaln(willTakedOrderCount)
+        foodCount+=willTakedOrderCount
+        willTakedOrderCount=0
+    
+    showOrderCount.config(text="alinacak siparis sayisi:"+str(willTakedOrderCount))
+
+
+
+sendOrderToChefSemaphore=ModifiedSemaphore(0)
+def sendOrderToChefBtn(showFoodCount):
+    global foodCount
+    sendOrderToChefSemaphore.signaln(chefC)
+    showFoodCount.config(text="hazirlanacak siparis sayisi"+str(foodCount))
+
+
+startCookSemaphore=ModifiedSemaphore(0)
+def chefCookBtn(showFoodCount):
+    global foodCount
+    print(foodCount)
+
+    if foodCount>=chefC:
+        startCookSemaphore.signaln(chefC)
+        foodCount-=chefC
+    elif foodCount<chefC:
+        startCookSemaphore.signaln(foodCount)
+        foodCount=0
+        
+    showFoodCount.config(text="hazirlanacak siparis sayisi"+str(foodCount))
+
+
+
+startPaymentSemaphore=ModifiedSemaphore(0)
+def paymentBtn():
+    startPaymentSemaphore.signaln(checkoutC)
+
+
 def createcustomer(clientC, primaryClientCount,desklabels):
-    global customercount, clientsId, clientCount
+    global customercount, clientsId, clientCount,willTakedOrderCount
     e.clear()
     customercount = 0
     clientCount = clientC
+    willTakedOrderCount=clientC
 
     clientsId = [[0 for x in range(2)] for y in range(clientCount)]
     for id in range(clientCount-primaryClientCount):#8 kez dönecek(8 tane thread oluşacak)
@@ -109,11 +161,12 @@ def siparişVer(clientNo):
     orderqueue.put("order created -{}-".format(clientNo))
     writeToLog(f"{clientNo}. order created in queue -{clientNo}-")
     orderTook.wait()
-
     pay(clientNo)
 
 def pay(clientNo):
     writeToLog(f"{clientNo}. paymanet waiting client")
+    """burada ödeme butonu fonksiyonu"""
+    startPaymentSemaphore.wait()
     checkoutcameQueue.signal()
     checkoutQueue.wait()
     writeToLog(f"{clientNo}. paymanet done from client")
@@ -121,14 +174,23 @@ def pay(clientNo):
 
 def customerDie(clientNo):
     writeToLog(f"{clientNo}. thread Leaving")
-    barrier.release()
 
 def oncelikli_masaya_yerlestir(clientNo):
     global barrier
     global customercount
     desk = False
     if clientsId[clientNo][1]!=0:
+        waitBarrierTime = time.time() 
         barrier.acquire()
+        getintoBarrierTime = time.time()
+        timeout = getintoBarrierTime - waitBarrierTime
+        print("timeout is here : ", timeout)
+        if timeout > 20:
+            print("this thread will be dead")
+            writeToLog(f" client {clientNo} : thread dead")
+
+            barrier.release()
+            return
         desk = deskQueue.get()
         style = ttk.Style()
         style.configure("deskfull.TLabel", background="green", foreground='blue')
@@ -149,13 +211,23 @@ def oncelikli_masaya_yerlestir(clientNo):
         style = ttk.Style()
         style.configure("deskfree.TLabel", background="gray", foreground='blue')
         desk.config(text= "masa görevde değil",style="deskfree.TLabel")
+        barrier.release()
 
 def rastgele_masaya_yerlestir(clientNo):
     global barrier
     e.wait()
     if e.is_set():
         if clientsId[clientNo][1]==0:
+            waitBarrierTime = time.time() 
             barrier.acquire()
+            getintoBarrierTime = time.time()
+            timeout = getintoBarrierTime - waitBarrierTime
+            print("timeout is here : ", timeout)
+            if timeout > 20:
+                print("this thread will be dead")
+                writeToLog(f" client {clientNo} : thread dead")
+                barrier.release()
+                return
             desk = deskQueue.get()
             style = ttk.Style()
             style.configure("deskfull.TLabel", background="green", foreground='blue')
@@ -166,6 +238,7 @@ def rastgele_masaya_yerlestir(clientNo):
             style = ttk.Style()
             style.configure("deskfree.TLabel", background="gray", foreground='blue')
             desk.config(text= "masa görevde değil",style="deskfree.TLabel")
+            barrier.release()
 
 def calistir(thread_id,desklabel):
     writeToLog("customer Created ID : " + str(thread_id))
@@ -175,11 +248,19 @@ def calistir(thread_id,desklabel):
     rastgele_masaya_yerlestir(thread_id)
 
 
-
+waiterC=0
+chefC=0
 
 def start(deskC, waiterCount, checkoutCount, chefCount,desklabels,waiterLabels, checkoutLabels, chefLabels):
         global barrier
         global deskCount
+        global waiterC
+        global chefC
+        global checkoutC
+        waiterC=waiterCount
+        chefC=chefCount 
+        checkoutC=checkoutCount
+
         deskCount = deskC
 
         barrier = threading.Semaphore(value=deskCount)
@@ -215,11 +296,15 @@ def start(deskC, waiterCount, checkoutCount, chefCount,desklabels,waiterLabels, 
             chefThread.join()
 
 
+
+
 def waiterstart(waiterLabels):
     id = threading.get_ident()
     isEnd = False
     writeToLog(f"waiter {id} : Waiter Started and waiting for call")
     while not isEnd:
+        """burada siparis almak için butonu beklemeli"""
+        takeOrderSemaphore.wait()
         waiterSemaphore.signal()
         orderSemaphore.wait()
         data = str(orderqueue.get()).split("-")[1]
@@ -231,12 +316,14 @@ def waiterstart(waiterLabels):
 
         #
         time.sleep(5)
+        sendOrderToChefSemaphore.wait()
         writeToLog(f"waiter {id} :  chef will be called after that")
         style.configure("waiterfree.TLabel", background="gray", foreground='blue')
         waiterLabels[1].config(text= "garson görevde değil",style="waiterfree.TLabel")
         #
         waiterQueue.put(data)
         writeToLog("chef calling")
+        """chefe sipariş gönderme butonu"""
         chefWaiterSemaphore.signal()
         chefSemaphore.wait()
         writeToLog("here")
@@ -250,14 +337,14 @@ def checkoutstart(checkoutLabels):
         checkoutcameQueue.wait()
         writeToLog(f"checkout {id} : payment tooking")
         style = ttk.Style()
-        style.configure("waitertask.TLabel", background="green", foreground='blue')
-        checkoutLabels[1].config(text= "kasa görevde",style="waitertask.TLabel")
+        style.configure("checkoutTask.TLabel", background="green", foreground='blue')
+        checkoutLabels[1].config(text= "kasa görevde",style="checkoutTask.TLabel")
         time.sleep(5)
-        style.configure("waiterfree.TLabel", background="gray", foreground='blue')
-        checkoutLabels[1].config(text= "kasa görevde değil",style="waiterfree.TLabel")
+        style.configure("checoutfree.TLabel", background="gray", foreground='blue')
+        checkoutLabels[1].config(text= "kasa görevde değil",style="checoutfree.TLabel")
 
 
-
+"""
 def chefstart(chefLabels):
     id=threading.get_ident()
     writeToLog(f"Chef {id} started and waiting for order") 
@@ -266,14 +353,76 @@ def chefstart(chefLabels):
         chefWaiterSemaphore.wait()
         data= str(waiterQueue.get())
         print("chef tooked the order from waiter")
+
         writeToLog(f"chef {id}:tooked the order given no: {data}")
+        #BURADA TUTUNCU OLACAK
+        #HAZIRLAMAYA BAŞLA BUTONU BURADA ÇAĞIRILACAK
         style = ttk.Style()
-        style.configure("waitertask.TLabel", background="green", foreground='blue')
-        chefLabels[1].config(text= "asci görevde",style="waitertask.TLabel")
+        style.configure("cheforder.TLabel", background="orange", foreground='blue')
+        chefLabels[1].config(text= "asci siparisi aldi",style="cheforder.TLabel")
+        startCookSemaphore.wait()
+        ########################################
+        style.configure("cheftask.TLabel", background="green", foreground='blue')
+        chefLabels[1].config(text= "asci görevde",style="cheftask.TLabel")
         time.sleep(5)
         writeToLog(f"chef {id}: order no {data} ready")
-        style.configure("waiterfree.TLabel", background="gray", foreground='blue')
-        chefLabels[1].config(text= "aşçı görevde değil",style="waiterfree.TLabel")
+        style.configure("cheffree.TLabel", background="gray", foreground='blue')
+        chefLabels[1].config(text= "aşçı görevde değil",style="cheffree.TLabel")
         orderTook.signal()
+"""
+furnanceCountM = threading.Semaphore()
+
+def chefstart(chefLabels):
+    id=threading.get_ident()
+    writeToLog(f"Chef {id} started and waiting for order")
+    taskList = []
+    while True:
+        if(len(taskList) == 0):
+            style = ttk.Style()
+            style.configure("cheffree.TLabel", background="gray", foreground='blue')
+            chefLabels[1].config(text= "aşçı görevde değil",style="cheffree.TLabel")
+        if(len(taskList) < 2):
+            chefSemaphore.signal()
+            style = ttk.Style()
+            style.configure("cheffree.TLabel", background="gray", foreground='blue')
+            chefLabels[1].config(text= "aşçı görevde değil",style="cheffree.TLabel")
+            chefWaiterSemaphore.wait()
+            #BURADA TUTUNCU OLACAK
+            #HAZIRLAMAYA BAŞLA BUTONU BURADA ÇAĞIRILACAK
+            style.configure("cheforder.TLabel", background="orange", foreground='blue')
+            chefLabels[1].config(text= "asci siparisi aldi",style="cheforder.TLabel")
+            startCookSemaphore.wait()
+            ########################################
+            style.configure("cheftask.TLabel", background="green", foreground='blue')
+            chefLabels[1].config(text= "asci görevde",style="cheftask.TLabel")
+            writeToLog(f"Chef {id} : activated furnance {len(taskList)} ")
+            t=threading.Thread(target=cookmeal, args=(chefLabels,taskList, id,len(taskList)+3))
+            taskList.append(t)
+            t.start()
+        elif(len(taskList) == 2):
+            writeToLog(f"Chef {id} all furnances are full")
+            time.sleep(1)
+
+def cookmeal(chefLabels, taskList, id, index):
+    data= str(waiterQueue.get())
+    print("chef tooked the order from waiter")
+    writeToLog(f"chef {id} , furnance {len(taskList)} : tooked the order given no: {data}")
+    style = ttk.Style()
+    style.configure("furnanceWorks.TLabel", background="green", foreground='blue')
+    chefLabels[index].config(text= "F",style="furnanceWorks.TLabel")
+    writeToLog(f"chef {id} , furnance {len(taskList)} : started to cook order {data}")
+    time.sleep(5)
+    writeToLog(f"chef {id} , furnance {len(taskList)} : order no {data} is ready")
+
+    style = ttk.Style()
+    style.configure("furnanceFree.TLabel", background="gray", foreground='blue')
+    chefLabels[index].config(text= "F",style="furnanceFree.TLabel")
+    furnanceCountM.acquire()
+    taskList.pop()
+    furnanceCountM.release()
+    writeToLog(f"chef {id} , furnance {len(taskList)} : closed")
+    orderTook.signal()
+
+
 #createcustomer(6,2)
 #start(4,2,1,2)
