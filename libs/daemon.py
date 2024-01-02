@@ -219,19 +219,23 @@ def getpayment(target_data):
         else:
             break
 
-def siparişVer(clientNo):
+def siparişVer(clientNo,desk):
     writeToLog(f"{clientNo}. Waiter calling")
+    desk.config(text= f"masa görevde no : {clientNo}, waiter waiting")
     orderSemaphore.signal()
     waiterSemaphore.wait()
     orderqueue.put(clientNo)
     writeToLog(f"{clientNo}. order created in queue -{clientNo}-")
     #yemeği yemeli
-    writeToLog(f"{clientNo}. meal tooked and started to eat -{clientNo}-")
+    desk.config(text= f"masa görevde no : {clientNo}, meal waiting")
     getmeal(clientNo)
+    writeToLog(f"{clientNo}. meal tooked and started to eat -{clientNo}-")
     orderTook.wait()
+    desk.config(text= f"masa görevde no : {clientNo}, meal eating")
     time.sleep(eatmealSleep)
     writeToLog(f"{clientNo}. meal eated -{clientNo}-")
     eatedMeals.put(clientNo)
+    desk.config(text= f"masa görevde no : {clientNo}, waiting to pay")
     pay(clientNo)
 
 def pay(clientNo):
@@ -279,7 +283,7 @@ def oncelikli_masaya_yerlestir(clientNo):
     semaphore.release()
 
     if clientsId[clientNo][1]!=0:
-        siparişVer(clientNo)
+        siparişVer(clientNo,desk)
     if desk != False:
         deskQueue.put(desk)
         style = ttk.Style()
@@ -307,7 +311,7 @@ def rastgele_masaya_yerlestir(clientNo):
             style.configure("deskfull.TLabel", background="green", foreground='blue')
             desk.config(text= f"masa görevde no : {clientNo}",style="deskfull.TLabel")
             writeToLog(f"{clientNo}. thread sitted to Desk")
-            siparişVer(clientNo)
+            siparişVer(clientNo,desk)
             deskQueue.put(desk)
             style = ttk.Style()
             style.configure("deskfree.TLabel", background="gray", foreground='blue')

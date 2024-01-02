@@ -1,16 +1,16 @@
 Daemon Started 
-waiter 224 : Waiter Started and waiting for call 
-waiter 3372 : Waiter Started and waiting for call 
-waiter 8692 : Waiter Started and waiting for call 
+waiter 7756 : Waiter Started and waiting for call 
+waiter 9792 : Waiter Started and waiting for call 
+waiter 10588 : Waiter Started and waiting for call 
 3 waiter thread created 
  
-checkout 17172 :  Started 
+checkout 12888 :  Started 
 1 checout thread created 
  
-Chef 6612 started and waiting for order 
-Chef 15252 started and waiting for order 
+Chef 10364 started and waiting for order 
 2 chef thread created 
  
+Chef 8560 started and waiting for order 
 customer Created ID : 0 
 customer Created ID : 1 
 customer Created ID : 2 
@@ -29,105 +29,3 @@ customer Created ID : 5
 2. Waiter calling 
 3. thread sitted to Desk 
 3. Waiter calling 
-4. order created in queue -4- 
-4. meal tooked and started to eat -4- 
-0. order created in queue -0- 
-0. meal tooked and started to eat -0- 
-waiter 3372 : order tooked order given no : 5 
-waiter 8692 : order tooked order given no : 0 
-5. order created in queue -5- 
-5. meal tooked and started to eat -5- 
-waiter 224 : order tooked order given no : 4 
-waiter 224 :  chef will be called after that 
-waiter 3372 :  chef will be called after that 
-waiter 8692 :  chef will be called after that 
-chef calling 
-here 
-chef calling 
-here 
-chef calling 
-Chef 15252 : activated furnance 0  
-Chef 6612 : activated furnance 0  
-here 
-chef 15252 , furnance 1 : tooked the order given no: 4 
-chef 6612 , furnance 1 : tooked the order given no: 5 
-chef 15252 , furnance 1 : started to cook order 4 
-chef 6612 , furnance 1 : started to cook order 5 
-chef 15252 , furnance 1 : order no 4 is ready 
-chef 6612 , furnance 1 : order no 5 is ready 
-chef 15252 , furnance 0 : closed 
-chef 6612 , furnance 0 : closed 
-4. meal eated -4- 
-4. paymanet waiting client 
-5. meal eated -5- 
-5. paymanet waiting client 
-4. paymanet done from client 
-checkout 17172 : payment tooking client : 4 
-checkout 17172 : payment tooked client : 4 
-4. thread Leaving 
-5. paymanet done from client 
-checkout 17172 : payment tooking client : 5 
-checkout 17172 : payment tooked client : 5 
-5. thread Leaving 
-Chef 15252 : activated furnance 0  
-chef 15252 , furnance 1 : tooked the order given no: 0 
-chef 15252 , furnance 1 : started to cook order 0 
-chef 15252 , furnance 1 : order no 0 is ready 
-chef 15252 , furnance 0 : closed 
-0. meal eated -0- 
-0. paymanet waiting client 
-0. paymanet done from client 
-checkout 17172 : payment tooking client : 0 
-checkout 17172 : payment tooked client : 0 
-0. thread Leaving 
-2. order created in queue -2- 
-2. meal tooked and started to eat -2- 
-1. order created in queue -1- 
-1. meal tooked and started to eat -1- 
-3. order created in queue -3- 
-3. meal tooked and started to eat -3- 
-waiter 3372 : order tooked order given no : 2 
-waiter 8692 : order tooked order given no : 1 
-waiter 224 : order tooked order given no : 3 
-waiter 3372 :  chef will be called after that 
-chef calling 
-here 
-waiter 8692 :  chef will be called after that 
-waiter 224 :  chef will be called after that 
-chef calling 
-here 
-chef calling 
-Chef 6612 : activated furnance 0  
-Chef 15252 : activated furnance 0  
-here 
-chef 6612 , furnance 1 : tooked the order given no: 2 
-chef 15252 , furnance 1 : tooked the order given no: 1 
-chef 6612 , furnance 1 : started to cook order 2 
-chef 15252 , furnance 1 : started to cook order 1 
-chef 6612 , furnance 1 : order no 2 is ready 
-chef 15252 , furnance 1 : order no 1 is ready 
-chef 6612 , furnance 0 : closed 
-chef 15252 , furnance 0 : closed 
-2. meal eated -2- 
-2. paymanet waiting client 
-2. paymanet done from client 
-checkout 17172 : payment tooking client : 2 
-1. meal eated -1- 
-1. paymanet waiting client 
-checkout 17172 : payment tooked client : 2 
-2. thread Leaving 
-1. paymanet done from client 
-checkout 17172 : payment tooking client : 1 
-checkout 17172 : payment tooked client : 1 
-1. thread Leaving 
-Chef 6612 : activated furnance 0  
-chef 6612 , furnance 1 : tooked the order given no: 3 
-chef 6612 , furnance 1 : started to cook order 3 
-chef 6612 , furnance 1 : order no 3 is ready 
-chef 6612 , furnance 0 : closed 
-3. meal eated -3- 
-3. paymanet waiting client 
-3. paymanet done from client 
-checkout 17172 : payment tooking client : 3 
-checkout 17172 : payment tooked client : 3 
-3. thread Leaving 
