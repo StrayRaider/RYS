@@ -272,7 +272,7 @@ def oncelikli_masaya_yerlestir(clientNo):
         desk = deskQueue.get()
         style = ttk.Style()
         style.configure("deskfull.TLabel", background="green", foreground='blue')
-        desk.config(text= f"masa görevde no : {clientNo}",style="deskfull.TLabel")
+        desk.config(text= f"masa görevde no : {clientNo}, öncelikli",style="deskfull.TLabel")
         writeToLog(f"{clientNo}. thread sitted to Desk Primer")
 
     semaphore.acquire()
